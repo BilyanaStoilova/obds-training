@@ -6,6 +6,40 @@ Created on Thu Jan 25 11:15:34 2018
 @author: stoilova
 """
 
+import pysam
+import sys
+#path = sys.stdin
+import logging as L
+
+L.basicConfig(filename = "MyLog.log", level = L.DEBUG)
+pairs_count = 0
+average_fragmentsize = 0
+sum_intervals = 0
+
+path = "/hts/data1/akennedy/SampleSetC_2164/bam/BEL033_1000.bam"
+#outf = sys.stdout
+
+bamfile = pysam.AlignmentFile(path, "rb")
+#outf = open('BEL033_v2.bed', 'w')
+
+iter = bamfile.fetch() #read through the whole file
+initial_count = bamfile.count()
+for aln in iter:
+    if aln.is_paired and aln.is_read1:
+        pairs_count += 1
+        fragment_end = str(aln.reference_start + aln.template_length)
+        sum_intervals += aln.template_length
+        sys.stdout.write(aln.reference_name + '\t' + str(aln.reference_start) + '\t' + fragment_end + '\t' + aln.query_name + '\t.\t.\n')
+        
+        average_fragmentsize = sum_intervals / pairs_count
+L.info("initial_count{}".format(initial_count))
+L.info("pairs_count {}".format(pairs_count))
+L.info("Average fragment size {:4.2f}".format(average_fragmentsize))
+bamfile.close()
+#outf.close()
+
+
+"""
 path="/hts/data1/akennedy/SampleSetC_2164/bam/BEL033_1000.sam"
 Chr=''
 Start=0
@@ -56,3 +90,4 @@ if RawPairedReads/2 == FileReadCount:
    print("We did it!")
 else:
    print("Try again!")
+   """
